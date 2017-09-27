@@ -19,6 +19,9 @@ def words_once(line):
  
 def get_key(kv):
 	return kv[0]
+
+def get_val(kv):
+	return kv[1]
  
 def output_format(kv):
 	k, v = kv
@@ -26,6 +29,16 @@ def output_format(kv):
  
 text = sc.textFile(inputs)
 words = text.flatMap(words_once)
-wordcount = words.filter(lambda n: n != "").reduceByKey(operator.add)
-outdata = wordcount.sortBy(get_key).map(output_format)
+wordcount = words.reduceByKey(operator.add).filter(lambda n: n!="")
+
+#plain output
+outdata = wordcount
 outdata.saveAsTextFile(output)
+
+#outdata with sort and map
+outdata = wordcount.sortBy(get_key).map(output_format)
+outdata.saveAsTextFile(output + '/by-word')
+
+#outdata with sort by freq and map
+outdata = wordcount.sortBy(get_val).map(output_format)
+outdata.saveAsTextFile(output + '/by-freq')
