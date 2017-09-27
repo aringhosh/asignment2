@@ -22,6 +22,10 @@ def get_key(kv):
 
 def get_val(kv):
 	return kv[1]
+
+#using a one liner lambda instead
+#def filter_empty_strings(kv):
+	#return kv[0]!=""
  
 def output_format(kv):
 	k, v = kv
@@ -29,16 +33,17 @@ def output_format(kv):
  
 text = sc.textFile(inputs)
 words = text.flatMap(words_once)
-wordcount = words.reduceByKey(operator.add).filter(lambda n: n!="")
+
+wordcount = words.reduceByKey(operator.add)
 
 #plain output
-outdata = wordcount
+outdata = wordcount.filter(lambda x: x[0]!="")
 outdata.saveAsTextFile(output)
 
 #outdata with sort and map
-outdata = wordcount.sortBy(get_key).map(output_format)
-outdata.saveAsTextFile(output + '/by-word')
+outdata = wordcount.filter(lambda x: x[0]!="").sortBy(get_key).map(output_format)
+outdata.saveAsTextFile(output+ '/by-word')
 
 #outdata with sort by freq and map
-outdata = wordcount.sortBy(get_val).map(output_format)
+outdata = wordcount.filter(lambda x: x[0]!="").sortBy(get_val).map(output_format)
 outdata.saveAsTextFile(output + '/by-freq')
