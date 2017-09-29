@@ -22,10 +22,6 @@ def get_key(kv):
 
 def get_val(kv):
 	return kv[1]
-
-#using a one liner lambda instead
-#def filter_empty_strings(kv):
-	#return kv[0]!=""
  
 def output_format(kv):
 	k, v = kv
