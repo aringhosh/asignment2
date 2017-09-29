@@ -36,7 +36,7 @@ wordcount = words.reduceByKey(operator.add).filter(lambda x: x[0]!="").cache()
 outdata = wordcount
 outdata.saveAsTextFile(output)
 
-#outdata with sort and map
+#outdata with sort by key and map
 outdata = wordcount.sortBy(get_key).map(output_format)
 outdata.saveAsTextFile(output+ '/by-word')
 
