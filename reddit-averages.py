@@ -9,7 +9,7 @@ import json
 inputs = sys.argv[1]
 output = sys.argv[2]
  
-conf = SparkConf().setAppName('word count')
+conf = SparkConf().setAppName('reddit average')
 sc = SparkContext(conf=conf)
 assert sys.version_info >= (3, 5)  # make sure we have Python 3.5+
 assert sc.version >= '2.2'  # make sure we have Spark 2.2+
@@ -27,15 +27,15 @@ def get_val(kv):
 def add_pairs(x, y):
 	return (x[0] + y[0], x[1] + y[1])
 	
-
 def output_format(kv):
 	subreddit, (count, score) = kv
-	return '%s, %f' % (subreddit, score/count)
+	#return '[\"%s\", %s]' % (subreddit, score/count)
+	return json.dumps((subreddit, score/count))
 
 text = sc.textFile(inputs)
 words = text.flatMap(words_once).reduceByKey(add_pairs).map(output_format)
 print(words.take(10))
-words.saveAsTextFile(output)
+words.coalesce(1).saveAsTextFile(output)
 
 #wordcount = words.reduceByKey(operator.add)
 
