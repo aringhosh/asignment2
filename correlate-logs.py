@@ -41,4 +41,4 @@ host_bytes = host_bytes.reduceByKey(add_tuples)
 
 output_data = host_bytes.map(calculateR).map(lambda r: ('r = ', r[0], 'r^2 = ' , r[1]))
 #print(output_data.collect())
-output_data.saveAsTextFile(output)
+output_data.coalesce(1).saveAsTextFile(output)
