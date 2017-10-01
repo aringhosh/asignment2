@@ -23,17 +23,21 @@ def parseline(line):
 
 def add_tuples(a, b):
     return tuple(sum(p) for p in zip(a,b))
+
+def getRComponents(t):
+	host, (n, bytes) = t
+	return ('all_hosts', (bytes, n, pow(bytes, 2), pow(n, 2), bytes*n, 1))
 	
 def output_format(comp):
-	(sum_x, sum_y, sum_x2, sum_y2, sum_xy, n) = comp
+	(host, (sum_x, sum_y, sum_x2, sum_y2, sum_xy, n)) = comp
 	r = (n*sum_xy - sum_x*sum_y)/(math.sqrt(n*sum_x2 - pow(sum_x, 2)) * math.sqrt(n*sum_y2 - pow(sum_y, 2)))
-	return r, pow(r, 2)
+	return 'r: ', r, 'r2: ',pow(r, 2)
 
 host_bytes = sc.textFile(inputs).map(lambda line: parseline(line)).filter(lambda x: x is not None)
+host_bytes = host_bytes.reduceByKey(add_tuples)
+host_bytes = host_bytes.map(getRComponents)
+host_bytes = host_bytes.reduceByKey(add_tuples)
 
-#words = sc.textFile(inputs).flatMap(parseline).reduceByKey(add_tuples)
-print(host_bytes.collect())
-#words = words.map(lambda host, bytes, n: ('all_hosts', (bytes, n, pow(bytes, 2), pow(n, 2), bytes*n, 1)))
-#r_components = words.reduceByKey(lambda x,y: add_tuples(x,y)).map(lambda k,v: v)
-#output_data = r_components.map(output_format)
+output_data = host_bytes.map(output_format)
+print(output_data.collect())
 #output_data.saveAsTextFile(output)
