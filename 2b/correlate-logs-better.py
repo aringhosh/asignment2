@@ -29,6 +29,16 @@ def getXYComponents(t):
 	host, (x, y) = t
 	return (x, y)
 
+def x_minus_xbar_square(x):
+     return pow((x[0]-x_mean), 2)
+
+def y_minus_ybar_square(y):
+     return pow((y[1]-y_mean), 2)
+
+def xDiffTimesYDiff(xy):
+    x = xy[0]
+    y = xy[1]
+    return (x - x_mean) * (y - y_mean)
 
 host_bytes = sc.textFile(inputs).map(lambda line: parseline(line)).filter(lambda x: x is not None)
 host_bytes = host_bytes.reduceByKey(add_tuples) # google.com, 5,2003; apple.com, 6, 20112
@@ -39,10 +49,17 @@ x_mean = sum_x / len(_pairs.collect())
 sum_y = _pairs.map(lambda x: x[1]).reduce(operator.add)
 y_mean = sum_y / len(_pairs.collect())
 
-num = _pairs.map(lambda x: ((x[0]-x_mean) * (x[1]-y_mean))).reduce(operator.add)
-denom1 = math.sqrt(_pairs.map(lambda xy: pow((xy[0]-x_mean), 2)).reduce(operator.add))
-denom2 = math.sqrt(_pairs.map(lambda xy: pow((xy[1]-y_mean), 2)).reduce(operator.add))
+num = _pairs.map(xDiffTimesYDiff).reduce(operator.add)
+denom1 = math.sqrt(_pairs.map(x_minus_xbar_square).reduce(operator.add))
+denom2 = math.sqrt(_pairs.map(y_minus_ybar_square).reduce(operator.add))
 r = num/(denom1*denom2)
 r2 = pow(r, 2)
 
-sc.parallelize([r, r2]).coalesce(1).saveAsTextFile(output)
+## Print on command line
+#print('r = ', r)
+#print('r^2 = ', r2)
+
+## output on file 
+str1 = 'r = '+ str(r)
+str2 = 'r^2 = '+ str(r2)
+sc.parallelize([str1, str2]).coalesce(1).saveAsTextFile(output)
